@@ -1,0 +1,54 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart", 5) -- Waits up to 5 seconds for HumanoidRootPart to load
+
+-- Define the initial coordinates
+local firstPosition = Vector3.new(-3229, -404, 1355)
+
+-- Function to teleport the player to the initial position
+local function teleportToFirstPosition()
+    humanoidRootPart.CFrame = CFrame.new(firstPosition)
+end
+
+-- Function to highlight the OctagonPart
+local function highlightPart(part)
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = part
+    highlight.FillColor = Color3.new(1, 0, 0)  -- Red color for highlighting
+    highlight.FillTransparency = 0.3              -- Set highlight transparency to 0.3
+    highlight.OutlineTransparency = 0              -- Fully visible outline
+    highlight.Parent = part
+end
+
+-- Function to find any OctagonPart around the specified y level range and teleport the player to it
+local function teleportToOctagonPartInModel(model, targetYLevel)
+    local found = false
+    
+    -- Search through all descendants of the model for OctagonParts
+    for _, octagonPart in ipairs(model:GetDescendants()) do
+        if octagonPart:IsA("MeshPart") and octagonPart.Name == "OctagonPart" then
+            local yPos = octagonPart.Position.Y
+            if yPos >= (targetYLevel - 1) and yPos <= (targetYLevel + 1) then  -- Check y level within 1 stud
+                humanoidRootPart.CFrame = octagonPart.CFrame -- Teleport player to OctagonPart's CFrame
+                octagonPart.Transparency = 0                  -- Set the OctagonPart transparency to 0%
+                highlightPart(octagonPart)                    -- Highlight the OctagonPart
+                print("Teleported to OctagonPart at Y level:", yPos)
+                found = true
+                break  -- Exit the loop if found
+            end
+        end
+    end
+    
+    if not found then
+        print("No OctagonPart found within 1 stud of the specified Y level in this model.")
+    end
+end
+
+-- Execute the teleportation sequence
+teleportToFirstPosition()                        -- Teleport to the first position
+wait(2)                                          -- Wait for 2 seconds
+
+-- Search for OctagonParts in the RiverCavePlek model
+local riverCavePlekModel = game.Workspace.World.TreeRegions.RiverCavePlek
+
+teleportToOctagonPartInModel(riverCavePlekModel, -583) -- Attempt to teleport to OctagonPart within the specified Y level range
